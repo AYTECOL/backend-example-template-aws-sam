@@ -17,6 +17,7 @@ const {
   ListS3Files,
   getS3File,
   deleteS3File,
+  uploadS3SignedUrl,
 } = require("../aws/s3");
 
 const api = express.Router();
@@ -77,6 +78,24 @@ api.post("/path2", upload.single("file"), async (request, response) => {
     response
       .status(StatusCodes.OK)
       .json({ msg: "Hello from path2" });
+  } catch (error) {
+    console.error("Error", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ msg: "Internal Server Error" });
+  }
+});
+
+api.post("/path3", async (request, response) => {
+  try {
+    console.info("BODY", request.body);
+
+    const { fileName } = request.body;
+    const presignedUrl = await uploadS3SignedUrl(fileName);
+
+    response
+      .status(StatusCodes.OK)
+      .json({ msg: "Hello from path3", presignedUrl });
   } catch (error) {
     console.error("Error", error);
     response

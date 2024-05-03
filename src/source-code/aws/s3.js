@@ -5,6 +5,7 @@ const {
   DeleteObjectCommand,
   ListObjectsV2Command
 } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const { AWS_REGION, S3_BUCKET } = require("../utils/constants");
 
@@ -84,9 +85,32 @@ const deleteS3File = async (key) => {
   }
 };
 
+const uploadS3SignedUrl = async (key) => {
+  const params = {
+    Bucket: S3_BUCKET,
+    Key: key,
+  };
+  console.info("UPDATE PARAMS", params);
+
+  let presignedUrl;
+  try {
+    const command = new PutObjectCommand(params);
+    presignedUrl = await getSignedUrl(s3, command, {
+      expiresIn: 3600,
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+  console.log("PRESIGNED URL", presignedUrl);
+
+  return presignedUrl;
+};
+
 module.exports = {
   ListS3Files,
   getS3File,
   uploadS3File,
   deleteS3File,
+  uploadS3SignedUrl,
 };
